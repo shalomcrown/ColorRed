@@ -30,7 +30,7 @@ public class Main implements Runnable {
     public Main() {
         sirenUrl = getClass().getResource("/91244-SIREN2.mp3");
         if (sirenUrl != null) {
-            //TODO: Use javafx
+            //TODO: Use javafx maybe never
         }
 
         updateThread = new Thread(this, "Update thread");
