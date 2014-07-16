@@ -25,6 +25,7 @@ public class Main implements Runnable {
     String lastId = "--";
     String requiredArea = "160";
     URL sirenUrl = null;
+    long lastModified = 0L;
 
     public Main() {
         sirenUrl = getClass().getResource("/91244-SIREN2.mp3");
@@ -49,44 +50,60 @@ public class Main implements Runnable {
                 try {
                     HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 
+                    if (lastModified != 0L) {
+                        conn.setIfModifiedSince(lastModified);
+                    }
+
                     conn.connect();
-                    InputStream in = conn.getInputStream();
+                    int responseCode = conn.getResponseCode();
 
-                    @SuppressWarnings("unchecked")
-                    HashMap<String, ?> map = mapper.readValue(in, HashMap.class);
+                    if (responseCode >= 400) {
+                        System.out.println("Error contacting site:" + responseCode);
 
-                    String newId =(String) map.get("id");
+                    } else if (responseCode == 304) {
+                        // Ignore
 
-                    if (! newId.equals(lastId)) {
-                        long idTime = Long.parseLong(newId);
+                    } else  if (responseCode == 200) {
+                        InputStream in = conn.getInputStream();
 
-                        int offset = TimeZone.getDefault().getOffset(new Date().getTime());
-
-                        idTime -= offset;
-
-                        Date lastTime = new Date(idTime);
-
-                        System.out.println("Timestamp: " + lastTime);
-
-                        System.out.println(map);
+                        lastModified = conn.getLastModified();
 
                         @SuppressWarnings("unchecked")
-                        ArrayList<String> data = (ArrayList<String>)map.get("data");
+                        HashMap<String, ?> map = mapper.readValue(in, HashMap.class);
 
-                        if (data != null && data.size() > 0) {
-                            for (String line:data) {
-                                int lastSpace = line.lastIndexOf(' ');
-                                String lastField = line.substring(lastSpace + 1);
+                        String newId =(String) map.get("id");
 
-                                if (lastField.equals(requiredArea)) {
-                                    InputStream sitenIn = sirenUrl.openStream();
-                                    Player player = new Player(sitenIn);
-                                    player.play();
+                        if (! newId.equals(lastId)) {
+                            long idTime = Long.parseLong(newId);
+
+                            int offset = TimeZone.getDefault().getOffset(new Date().getTime());
+
+                            idTime -= offset;
+
+                            Date lastTime = new Date(idTime);
+
+                            System.out.println("Timestamp: " + lastTime);
+
+                            System.out.println(map);
+
+                            @SuppressWarnings("unchecked")
+                            ArrayList<String> data = (ArrayList<String>)map.get("data");
+
+                            if (data != null && data.size() > 0) {
+                                for (String line:data) {
+                                    int lastSpace = line.lastIndexOf(' ');
+                                    String lastField = line.substring(lastSpace + 1);
+
+                                    if (lastField.equals(requiredArea)) {
+                                        InputStream sitenIn = sirenUrl.openStream();
+                                        Player player = new Player(sitenIn);
+                                        player.play();
+                                    }
                                 }
                             }
-                        }
 
-                        lastId = newId;
+                            lastId = newId;
+                        }
                     }
 
                 } catch (IOException ex) {
