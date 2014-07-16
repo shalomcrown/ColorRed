@@ -91,13 +91,18 @@ public class Main implements Runnable {
 
                             if (data != null && data.size() > 0) {
                                 for (String line:data) {
-                                    int lastSpace = line.lastIndexOf(' ');
-                                    String lastField = line.substring(lastSpace + 1);
+                                    for (String innerSplit : line.split(",")) {
 
-                                    if (lastField.equals(requiredArea)) {
-                                        InputStream sitenIn = sirenUrl.openStream();
-                                        Player player = new Player(sitenIn);
-                                        player.play();
+                                        innerSplit = innerSplit.trim();
+
+                                        int lastSpace = innerSplit.lastIndexOf(' ');
+                                        String lastField = innerSplit.substring(lastSpace + 1);
+
+                                        if (lastField.equals(requiredArea)) {
+                                            InputStream sitenIn = sirenUrl.openStream();
+                                            Player player = new Player(sitenIn);
+                                            player.play();
+                                        }
                                     }
                                 }
                             }
