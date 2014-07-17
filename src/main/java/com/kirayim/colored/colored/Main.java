@@ -21,6 +21,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.ibm.icu.text.Bidi;
+
 /**
  * Hello world!
  *
@@ -92,7 +94,13 @@ public class Main implements Runnable {
                             Date lastTime = new Date(idTime);
 
                             System.out.println("Timestamp: " + lastTime);
-                            System.out.println(map);
+
+                            String reconstructedJson = map.toString();
+                            Bidi bidi = new Bidi();
+                            bidi.setReorderingMode(Bidi.REORDER_DEFAULT);
+                            bidi.setPara(reconstructedJson, Bidi.LEVEL_DEFAULT_RTL, new byte[100]);
+
+                            System.out.println(bidi.writeReordered(Bidi.DO_MIRRORING));
 
                             @SuppressWarnings("unchecked")
                             ArrayList<String> data = (ArrayList<String>)map.get("data");
