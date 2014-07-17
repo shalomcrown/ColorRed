@@ -43,7 +43,7 @@ public class Main implements Runnable {
             this.requiredArea = Integer.toString(areaCode);
         }
 
-        System.out.println("Working on area: " + areaCode);
+        System.out.println("Working on area: " + requiredArea);
 
         updateThread = new Thread(this, "Update thread");
         updateThread.start();
@@ -140,8 +140,8 @@ public class Main implements Runnable {
 
     static void printHelp(Options options) {
         new HelpFormatter().printHelp(
-                "java  -jar ${jar_name}  \\\n" +
-                "  ${extra_args}\n\n",
+                "java  -jar colored.jar  \n" +
+                "  [options] \n\n",
                 "Code Red monitor",
                 options,
                 "");
