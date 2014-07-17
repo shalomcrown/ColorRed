@@ -13,6 +13,12 @@ import java.util.TimeZone;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
@@ -27,11 +33,17 @@ public class Main implements Runnable {
     URL sirenUrl = null;
     long lastModified = 0L;
 
-    public Main() {
+    public Main(Integer areaCode) {
         sirenUrl = getClass().getResource("/91244-SIREN2.mp3");
         if (sirenUrl != null) {
             //TODO: Use javafx maybe never
         }
+
+        if (areaCode != null) {
+            this.requiredArea = Integer.toString(areaCode);
+        }
+
+        System.out.println("Working on area: " + areaCode);
 
         updateThread = new Thread(this, "Update thread");
         updateThread.start();
@@ -75,15 +87,11 @@ public class Main implements Runnable {
 
                         if (! newId.equals(lastId)) {
                             long idTime = Long.parseLong(newId);
-
                             int offset = TimeZone.getDefault().getOffset(new Date().getTime());
-
                             idTime -= offset;
-
                             Date lastTime = new Date(idTime);
 
                             System.out.println("Timestamp: " + lastTime);
-
                             System.out.println(map);
 
                             @SuppressWarnings("unchecked")
@@ -99,6 +107,7 @@ public class Main implements Runnable {
                                         String lastField = innerSplit.substring(lastSpace + 1);
 
                                         if (lastField.equals(requiredArea)) {
+                                            System.out.println("**** ALERT ALERT ALERT ****");
                                             InputStream sitenIn = sirenUrl.openStream();
                                             Player player = new Player(sitenIn);
                                             player.play();
@@ -129,8 +138,45 @@ public class Main implements Runnable {
 
     // ===================================================================
 
-    public static void main( String[] args )  {
+    static void printHelp(Options options) {
+        new HelpFormatter().printHelp(
+                "java  -jar ${jar_name}  \\\n" +
+                "  ${extra_args}\n\n",
+                "Code Red monitor",
+                options,
+                "");
+    }
 
-        new Main();
+    // ===================================================================
+
+    public static void main( String[] args )  {
+        Integer areaCode = null;
+        Options options = new Options();
+
+        options.addOption("a", "area-code", true, "Area code number");
+        options.addOption("h", "help", false, "This Help message");
+
+        CommandLineParser parser = new GnuParser();
+        CommandLine cmdLine = null;
+
+        try  {
+           cmdLine = parser.parse(options, args);
+        } catch (ParseException exp)  {
+            printHelp(options);
+
+           System.err.println("\n\nCommand line Parsing failed.  Reason: " + exp.getMessage());
+           System.exit(-1);
+        }
+
+        if (cmdLine.hasOption('h')) {
+            printHelp(options);
+            System.exit(0);
+        }
+
+        if (cmdLine.hasOption('a')) {
+            areaCode = Integer.parseInt(cmdLine.getOptionValue('a'));
+        }
+
+        new Main(areaCode);
     }
 }
