@@ -233,9 +233,11 @@ public class Main {
                                         }
                                     }
                                 }
+
+                                String outputString = buffer.toString();
                                 bidi = new Bidi();
                                 bidi.setReorderingMode(Bidi.REORDER_DEFAULT);
-                                bidi.setPara(buffer.toString(), Bidi.LEVEL_DEFAULT_RTL, new byte[buffer.length() * 2]);
+                                bidi.setPara(outputString, Bidi.LEVEL_DEFAULT_RTL, new byte[outputString.length() * 2]);
                                 String output = lastTime.toString() + "\n" + bidi.writeReordered(Bidi.DO_MIRRORING);
 
                                 if (alert) {
