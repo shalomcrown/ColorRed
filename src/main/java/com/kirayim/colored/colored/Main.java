@@ -98,7 +98,7 @@ public class Main implements Runnable {
                             String reconstructedJson = map.toString();
                             Bidi bidi = new Bidi();
                             bidi.setReorderingMode(Bidi.REORDER_DEFAULT);
-                            bidi.setPara(reconstructedJson, Bidi.LEVEL_DEFAULT_RTL, new byte[100]);
+                            bidi.setPara(reconstructedJson, Bidi.LEVEL_DEFAULT_RTL, new byte[reconstructedJson.length() * 2]);
 
                             System.out.println(bidi.writeReordered(Bidi.DO_MIRRORING));
 
