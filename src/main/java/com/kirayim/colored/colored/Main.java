@@ -20,7 +20,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import javazoom.jl.decoder.JavaLayerException;
@@ -37,7 +36,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.ibm.icu.text.Bidi;
 
 /**
- * Hello world!
+ *  Main class of Color Red
+ * @author Shalom Crown
  *
  */
 public class Main {
@@ -198,7 +198,7 @@ public class Main {
                             String reconstructedJson = map.toString();
                             Bidi bidi = new Bidi();
                             bidi.setReorderingMode(Bidi.REORDER_DEFAULT);
-                            bidi.setPara(reconstructedJson, Bidi.LEVEL_DEFAULT_RTL, new byte[reconstructedJson.length() * 2]);
+                            bidi.setPara(reconstructedJson, Bidi.LEVEL_DEFAULT_RTL, new byte[reconstructedJson.length() * 2 + 10]);
                             System.out.println(bidi.writeReordered(Bidi.DO_MIRRORING));
 
                             @SuppressWarnings("unchecked")
@@ -215,7 +215,7 @@ public class Main {
 
                                         int lastSpace = innerSplit.lastIndexOf(' ');
                                         String lastField = innerSplit.substring(lastSpace + 1);
-                                        String placename = innerSplit.substring(0, lastSpace - 1);
+                                        String placename = innerSplit.substring(0, lastSpace);
 
                                         if (firstname) {
                                             firstname = false;
@@ -235,16 +235,16 @@ public class Main {
                                 }
 
                                 String outputString = buffer.toString();
-                                bidi = new Bidi();
-                                bidi.setReorderingMode(Bidi.REORDER_DEFAULT);
-                                bidi.setPara(outputString, Bidi.LEVEL_DEFAULT_RTL, new byte[outputString.length() * 2]);
-                                String output = lastTime.toString() + "\n" + bidi.writeReordered(Bidi.DO_MIRRORING);
+//                                bidi = new Bidi();
+//                                bidi.setReorderingMode(Bidi.REORDER_DEFAULT);
+//                                bidi.setPara(outputString, (byte)0, new byte[outputString.length() * 2 + 10]);
+//                                String output = lastTime.toString() + "\n" + bidi.writeReordered(Bidi.DO_MIRRORING);
+//
+//                                if (alert) {
+//                                    output += " ****** ";
+//                                }
 
-                                if (alert) {
-                                    output += " ****** ";
-                                }
-
-                                alertList.add(new JTextArea(output), 0);
+                                addListElement(lastTime.toString() + " " + outputString);
                             } else if (lastId == null) {
                                 addListElement(lastTime.toString() + "\n No alerts");
                             }
