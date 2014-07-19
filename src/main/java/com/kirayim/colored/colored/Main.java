@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -141,6 +140,8 @@ public class Main {
         scrollPane.setViewportView(alertList);
     }
 
+    // ===================================================================
+
     private void addListElement(final String data) {
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -235,16 +236,7 @@ public class Main {
                                 }
 
                                 String outputString = buffer.toString();
-//                                bidi = new Bidi();
-//                                bidi.setReorderingMode(Bidi.REORDER_DEFAULT);
-//                                bidi.setPara(outputString, (byte)0, new byte[outputString.length() * 2 + 10]);
-//                                String output = lastTime.toString() + "\n" + bidi.writeReordered(Bidi.DO_MIRRORING);
-//
-//                                if (alert) {
-//                                    output += " ****** ";
-//                                }
-
-                                addListElement(lastTime.toString() + " " + outputString);
+                                addListElement(lastTime.toString() + " " + outputString + ((alert) ? " ****" : ""));
                             } else if (lastId == null) {
                                 addListElement(lastTime.toString() + "\n No alerts");
                             }
@@ -264,8 +256,10 @@ public class Main {
             }
         } catch (InterruptedException ex) {
             // Ignore
-        } catch (MalformedURLException ex) {
+        } catch (Throwable ex) {
             ex.printStackTrace();
+
+            System.exit(-1); // If update thread fails, kill entire program.
         }
     }
 
