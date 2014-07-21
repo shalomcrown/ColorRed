@@ -13,6 +13,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.swing.JButton;
@@ -34,6 +36,10 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import com.ibm.icu.text.Bidi;
 
+import java.awt.Font;
+
+import javax.swing.ImageIcon;
+
 /**
  *  Main class of Color Red
  * @author Shalom Crown
@@ -50,6 +56,7 @@ public class Main {
     private JTextField textField;
     private JList<String> alertList;
     ArrayList<String> listData = new ArrayList<>();
+    private JButton btnNewButton_1;
 
 
     // ===================================================================
@@ -99,9 +106,9 @@ public class Main {
         frmColorRed.setBounds(100, 100, 450, 300);
         frmColorRed.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         GridBagLayout gridBagLayout = new GridBagLayout();
-        gridBagLayout.columnWidths = new int[]{0, 0, 0};
+        gridBagLayout.columnWidths = new int[]{0, 0, 0, 0};
         gridBagLayout.rowHeights = new int[]{0, 0, 0};
-        gridBagLayout.columnWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+        gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
         gridBagLayout.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
         frmColorRed.getContentPane().setLayout(gridBagLayout);
 
@@ -122,14 +129,29 @@ public class Main {
             }
         });
         GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-        gbc_btnNewButton.insets = new Insets(0, 0, 5, 0);
+        gbc_btnNewButton.insets = new Insets(0, 0, 5, 5);
         gbc_btnNewButton.gridx = 1;
         gbc_btnNewButton.gridy = 0;
         frmColorRed.getContentPane().add(btnNewButton, gbc_btnNewButton);
 
+        btnNewButton_1 = new JButton();
+        btnNewButton_1.setIcon(new ImageIcon(Main.class.getResource("/Actions-irc-voice-icon (1).png")));
+        btnNewButton_1.setToolTipText("Play siren sound to test");
+        btnNewButton_1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                playSound();
+            }
+        });
+        btnNewButton_1.setFont(new Font("Dialog", Font.PLAIN, 10));
+        GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
+        gbc_btnNewButton_1.insets = new Insets(0, 0, 5, 0);
+        gbc_btnNewButton_1.gridx = 2;
+        gbc_btnNewButton_1.gridy = 0;
+        frmColorRed.getContentPane().add(btnNewButton_1, gbc_btnNewButton_1);
+
         JScrollPane scrollPane = new JScrollPane();
         GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-        gbc_scrollPane.gridwidth = 2;
+        gbc_scrollPane.gridwidth = 4;
         gbc_scrollPane.insets = new Insets(0, 0, 0, 5);
         gbc_scrollPane.fill = GridBagConstraints.BOTH;
         gbc_scrollPane.gridx = 0;
@@ -150,6 +172,20 @@ public class Main {
                 alertList.setListData(listData.toArray(new String[0]));
             }
         });
+    }
+
+    // ===================================================================
+
+    void playSound() {
+        InputStream sitenIn;
+
+        try {
+            sitenIn = sirenUrl.openStream();
+            Player player = new Player(sitenIn);
+            player.play();
+        } catch (IOException | JavaLayerException ex) {
+            ex.printStackTrace();
+        }
     }
 
     // ===================================================================
@@ -208,6 +244,7 @@ public class Main {
                             if (data != null && data.size() > 0) {
                                 StringBuffer buffer = new StringBuffer();
                                 boolean firstname = true;
+                                Map<String, List<String>> areasAffected = new HashMap<>();
 
                                 for (String line:data) {
                                     for (String innerSplit : line.split(",")) {
@@ -215,23 +252,42 @@ public class Main {
                                         innerSplit = innerSplit.trim();
 
                                         int lastSpace = innerSplit.lastIndexOf(' ');
-                                        String lastField = innerSplit.substring(lastSpace + 1);
+                                        String areaCode = innerSplit.substring(lastSpace + 1);
                                         String placename = innerSplit.substring(0, lastSpace);
+                                        List<String> areas = areasAffected.get(placename);
 
-                                        if (firstname) {
-                                            firstname = false;
-                                        } else {
-                                            buffer.append(", ");
+                                        if (areas == null) {
+                                            areas = new ArrayList<>();
+                                            areasAffected.put(placename, areas);
                                         }
-                                        buffer.append(placename);
 
-                                        if (lastField.equals(requiredArea)) {
+                                        areas.add(areaCode);
+
+
+                                        if (areaCode.equals(requiredArea)) {
                                             alert = true;
                                             System.out.println("**** ALERT ALERT ALERT ****");
-                                            InputStream sitenIn = sirenUrl.openStream();
-                                            Player player = new Player(sitenIn);
-                                            player.play();
+                                            playSound();
                                         }
+                                    }
+                                }
+
+
+                                /* -----------------------------------------------------------------
+                                 * Output string....
+                                 * ----------------------------------------------------------------- */
+
+                                for (String areaName : areasAffected.keySet()) {
+                                    if (firstname) {
+                                        firstname = false;
+                                    } else {
+                                        buffer.append(", ");
+                                    }
+
+                                    buffer.append(areaName);
+
+                                    for (String areaCode : areasAffected.get(areaName)) {
+                                        buffer.append(" ").append(areaCode);
                                     }
                                 }
 
@@ -246,8 +302,6 @@ public class Main {
                     }
 
                 } catch (IOException ex) {
-                    ex.printStackTrace();
-                } catch (JavaLayerException ex) {
                     ex.printStackTrace();
                 }
 
@@ -304,7 +358,7 @@ public class Main {
             areaCode = Integer.parseInt(cmdLine.getOptionValue('a'));
         }
 
-        Main window = new Main(areaCode);
+        new Main(areaCode);
 
     }
 }
